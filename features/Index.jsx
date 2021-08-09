@@ -7,28 +7,25 @@ import useHttp from '../hooks/use-http';
 const HomePage = () => {
   const [tasks, setTasks] = useState([]);
 
-  const transferedTasks = (taskObj) => {
-    const loadedTasks = [];
-
-    for (const taskKey in taskObj) {
-      loadedTasks.push({ id: taskKey, text: taskObj[taskKey].text });
-    }
-
-    setTasks(loadedTasks);
-  };
-
-  const {
-    isLoading,
-    error,
-    sendRequest: fetchTasks,
-  } = useHttp({
-    url: 'https://udemy-app-2dac9-default-rtdb.firebaseio.com/tasks.json',
-    transferedTasks,
-  });
+  const { isLoading, error, sendRequest: fetchTasks } = useHttp();
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    const transferedTasks = (taskObj) => {
+      const loadedTasks = [];
+
+      for (const taskKey in taskObj) {
+        loadedTasks.push({ id: taskKey, text: taskObj[taskKey].text });
+      }
+
+      setTasks(loadedTasks);
+    };
+    fetchTasks(
+      {
+        url: 'https://udemy-app-2dac9-default-rtdb.firebaseio.com/tasks.json',
+      },
+      transferedTasks
+    );
+  }, [fetchTasks]);
 
   const taskAddHandler = (task) => {
     setTasks((prevTasks) => prevTasks.concat(task));

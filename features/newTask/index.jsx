@@ -1,36 +1,27 @@
 import React, { useState } from 'react';
 import NewTaskForm from './newTaskForm';
+import useHttp from '../../hooks/use-http';
 
 const NewTask = (props) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { isLoading, error, sendRequest: sendTaskRequest } = useHttp();
 
-  const enterTaskHandler = async (taskText) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        'https://udemy-app-2dac9-default-rtdb.firebaseio.com/tasks.json',
-        {
-          method: 'POST',
-          body: JSON.stringify({ text: taskText }),
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Request failed!');
-      }
-      const data = await response.json();
-      const generatedID = data.name;
-      const createdTask = { id: generatedID, text: taskText };
-      props.onAddTask(createdTask);
-    } catch (error) {
-      setError(error.message || 'Form upload error');
-    }
-    setIsLoading(false);
+  const createTask = (taskText, taskData) => {
+    const generatedID = taskData.name;
+    const createdTask = { id: generatedID, text: taskText };
+    props.onAddTask(createdTask);
   };
 
+  const enterTaskHandler = async (taskText) => {
+    sendTaskRequest(
+      {
+        url: 'https://udemy-app-2dac9-default-rtdb.firebaseio.com/tasks.json',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: { text: taskText },
+      },
+      createTask.bind(null, taskText)
+    );
+  };
   return (
     <>
       <NewTaskForm onEnterTask={enterTaskHandler} loading={isLoading} />
